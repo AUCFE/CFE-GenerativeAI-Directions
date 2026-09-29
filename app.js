@@ -80,8 +80,13 @@
     state.buildPath = path;
     if(path === "explore"){
       window.open("https://aucfe.github.io/CFE-AI-Process-Mapping/", "_blank");
+      goTo("bridge");
+    } else {
+      goTo("welcome");
     }
-    goTo("welcome");
+  }
+  function reopenProcessMapping(){
+    window.open("https://aucfe.github.io/CFE-AI-Process-Mapping/", "_blank");
   }
   function continueFromLandingAnyway(){
     state.buildPath = "explore";
@@ -125,6 +130,8 @@
       html += renderUtilityBar();
       if(state.screen === "welcome"){
         html += renderWelcome();
+      } else if(state.screen === "bridge"){
+        html += renderBridge();
       } else if(state.screen === "output"){
         html += renderOutput();
       } else {
@@ -194,6 +201,28 @@
             '<button class="btn btn-primary" onclick="App.chooseBuildPath(\'explore\')">Open Process Mapping Tool ↗</button>' +
             '<div class="fork-secondary-link">or <button onclick="App.continueFromLandingAnyway()">continue here anyway →</button> &mdash; your directions will just be a bit more general until you narrow it down</div>' +
           '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  /* ---------------------------------------------------------------------
+     RENDER: BRIDGE (shown after opening the Process Mapping tool)
+  --------------------------------------------------------------------- */
+  function renderBridge(){
+    return '' +
+      '<div class="card">' +
+        '<p class="section-eyebrow">Welcome Back</p>' +
+        '<h2 class="section-title">Bring Your Idea Back Here</h2>' +
+        '<p class="section-desc">The Process Mapping tool should now be open in another tab. Once you\'ve found an opportunity worth pursuing there, come back to this tab to build it.</p>' +
+        '<ol style="padding-left:20px; margin:0 0 22px;">' +
+          '<li style="margin-bottom:10px;"><strong>You\'ll answer three quick questions here</strong> &mdash; whether you\'re building a chatbot or an agent, which platform you\'ll use, and a bit about your assistant.</li>' +
+          '<li style="margin-bottom:10px;"><strong>When you reach &quot;Tell us about your assistant,&quot;</strong> you\'ll see a box for pasting whatever the Process Mapping tool gave you.</li>' +
+          '<li><strong>We won\'t try to sort it into the fields automatically</strong> &mdash; every idea reads differently &mdash; but it carries straight through into your finished Instructions as background, so nothing you found gets lost.</li>' +
+        '</ol>' +
+        '<div class="fork-secondary-link" style="margin-bottom:20px;"><button onclick="App.reopenProcessMapping()">Reopen Process Mapping Tool ↗</button> if you closed the tab</div>' +
+        '<div class="step-nav" style="justify-content:space-between;">' +
+          '<button class="btn btn-ghost" onclick="App.goTo(\'landing\')">← Back</button>' +
+          '<button class="btn btn-primary" onclick="App.goTo(\'welcome\')">Continue →</button>' +
         '</div>' +
       '</div>';
   }
@@ -694,6 +723,7 @@
   window.App = {
     goTo: goTo,
     chooseBuildPath: chooseBuildPath,
+    reopenProcessMapping: reopenProcessMapping,
     continueFromLandingAnyway: continueFromLandingAnyway,
     selectPathChoice: selectPathChoice,
     selectPlatform: selectPlatform,
