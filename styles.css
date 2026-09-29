@@ -236,15 +236,25 @@ main { max-width: 980px; margin: 0 auto; padding: 32px 32px 90px; }
 .copy-btn.copied { background: var(--good); }
 .placeholder-note { background: var(--surface-raised); border: 1.5px dashed var(--border); border-radius: 12px; padding: 20px; font-size: 13.5px; color: var(--text-muted); text-align: center; }
 .final-actions { display: flex; justify-content: space-between; margin-top: 36px; }
+.download-row { display: flex; justify-content: flex-end; margin: -4px 0 4px; }
+.btn-download { background: var(--secondary); color: #fff; }
+.btn-download:hover { opacity: .9; }
+.print-header { display: none; }
 
 footer { text-align: center; color: var(--text-muted); font-size: 12.5px; margin: 50px 0 20px; }
 
 /* ── PRINT ───────────────────────────────────────────────── */
 @media print {
-  body, .card, .tool-block, .prompt-card { color: #1B2140 !important; background: #fff !important; }
+  body, .card, .tool-block, .prompt-card, .chip { color: #1B2140 !important; background: #fff !important; }
   body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .site-header, .utility-bar, .step-nav, .final-actions, footer, button { display: none !important; }
+  .site-header, .utility-bar, .step-nav, .final-actions, .download-row, footer, button { display: none !important; }
   .card { box-shadow: none; border: none; padding: 0; }
   .tool-block, .prompt-card { box-shadow: none; break-inside: avoid; border: 1px solid #DCE2F2 !important; }
+  .prompt-card-head { background: #F0F3FB !important; }
+  .chip { border: 1px solid #DCE2F2 !important; }
   .prompt-card pre { max-height: none; overflow: visible; }
+  .print-header {
+    display: block; font-size: 12px; color: #6b82a0 !important; margin-bottom: 10px;
+    border-bottom: 1px solid #cdd8ef; padding-bottom: 8px;
+  }
 }

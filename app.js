@@ -140,6 +140,15 @@
     if(state.screen === 3){
       wireStep3Inputs();
     }
+
+    if(state.screen === "output" && window.PROMPTS){
+      // Fill via textContent (never innerHTML) so free-text answers are
+      // never interpreted as HTML.
+      window.PROMPTS.forEach(function(prompt, idx){
+        var node = document.getElementById("promptText" + idx);
+        if(node) node.textContent = prompt.text;
+      });
+    }
   }
 
   function renderUtilityBar(){
@@ -519,9 +528,75 @@
   /* ---------------------------------------------------------------------
      RENDER: OUTPUT
   --------------------------------------------------------------------- */
+  /* ---------------------------------------------------------------------
+     CONTENT: COPY-PASTE INSTRUCTIONS & TEST-CASE PROMPT
+  --------------------------------------------------------------------- */
+  function buildInstructionsText(){
+    var lines = [];
+    lines.push("You are an assistant built for a specific purpose. Stay focused on this purpose in every response, and follow the guardrails below.");
+    lines.push("");
+    lines.push("PURPOSE");
+    lines.push(state.purpose.trim());
+    lines.push("");
+    lines.push("AUDIENCE");
+    lines.push(state.audience.trim() + " Write in a way that matches what this audience already knows.");
+    lines.push("");
+    lines.push("TONE");
+    lines.push(state.tone.trim() ? state.tone.trim() : "Clear, direct, and helpful.");
+    lines.push("");
+    lines.push("GUARDRAILS");
+    lines.push(state.guardrails.trim() ? state.guardrails.trim() : "If asked about something outside this purpose, say you can't help with that and suggest who or what might. Say when you don't know something rather than guessing.");
+    if(state.sensitiveData === true){
+      lines.push("");
+      lines.push("Also: because this assistant may deal with sensitive institutional data, never include information that identifies a specific individual (a student, employee, or patient) in your responses, and flag anything that looks like it needs a human review step before it goes further.");
+    }
+    lines.push("");
+    lines.push("KNOWLEDGE & RESOURCES");
+    lines.push(state.knowledge.trim() ? state.knowledge.trim() : "None provided yet — add reference files directly in the platform's Knowledge area once this is set up.");
+    if(state.processMappingPaste.trim()){
+      lines.push("");
+      lines.push("BACKGROUND (from your Process Mapping result)");
+      lines.push(state.processMappingPaste.trim());
+    }
+    lines.push("");
+    lines.push("HOW TO RESPOND");
+    var howTo = [
+      "- If a question falls outside this purpose, say so plainly and suggest who or what might help instead, rather than guessing.",
+      "- If you don't know something, say so rather than making it up."
+    ];
+    if(state.pathChoice === "agent"){
+      howTo.push("- Before taking any action in a connected tool — sending, creating, updating, or posting anything — describe what you're about to do and wait for explicit confirmation first.");
+    }
+    lines.push(howTo.join("\n"));
+    return lines.join("\n");
+  }
+
+  function buildTestCasesPromptText(){
+    return "Based on the instructions I just gave you, suggest 5 realistic test questions I should try to check that you're working as intended — including at least one question you should decline or redirect, and one that tests whether you stay in scope. For each, briefly say what a good response would look like.";
+  }
+
+  function buildPrompts(){
+    return [
+      { title: "Your Instructions", text: buildInstructionsText() },
+      { title: "Test Your Assistant", text: buildTestCasesPromptText() }
+    ];
+  }
+
+  function copyPrompt(idx, btn){
+    copyToClipboard(window.PROMPTS[idx].text, btn);
+  }
+
+  function downloadPdf(){
+    window.print();
+  }
+
+  /* ---------------------------------------------------------------------
+     RENDER: OUTPUT
+  --------------------------------------------------------------------- */
   function renderOutput(){
     var p = PLATFORM_META[state.platform];
     var html = '<div class="card">';
+    html += '<div class="print-header">Build Your AI Assistant &middot; Your Personalized Plan &middot; ' + new Date().toLocaleDateString() + '</div>';
     html += '<div class="output-topbar"><div>' +
       '<p class="section-eyebrow">Your Results</p>' +
       '<h2 class="section-title">Your Personalized Plan</h2>' +
@@ -533,6 +608,8 @@
       '<span class="chip">' + p.name + '</span>' +
       (state.sensitiveData ? '<span class="chip">Sensitive data</span>' : '') +
       '</div>';
+
+    html += '<div class="download-row"><button class="btn btn-download btn-sm" onclick="App.downloadPdf()">⬇ Download as PDF</button></div>';
 
     html += '<h3 class="section-heading">Part 1 &middot; Your Step-by-Step Directions</h3>';
     html += '<p class="section-sub">Plain-language steps for ' + p.name + '.</p>';
@@ -547,7 +624,13 @@
 
     html += '<h3 class="section-heading">Part 2 &middot; Your Copy-Paste Instructions &amp; Prompts</h3>';
     html += '<p class="section-sub">Already filled in with your answers. Click Copy, then paste into ' + p.name + '.</p>';
-    html += '<div class="placeholder-note">🚧 Instructions text, test cases, and copy buttons are coming in the next build phase.<br>Your answers so far are saved in this session &mdash; nothing will be lost.</div>';
+
+    window.PROMPTS = buildPrompts();
+    window.PROMPTS.forEach(function(prompt, idx){
+      html += '<div class="prompt-card"><div class="prompt-card-head"><h3>' + prompt.title + '</h3>' +
+        '<button class="copy-btn" onclick="App.copyPrompt(' + idx + ', this)">Copy</button></div>' +
+        '<pre id="promptText' + idx + '"></pre></div>';
+    });
 
     html += '<div class="final-actions">' +
       '<button class="btn btn-ghost" onclick="App.goTo(3)">← Back</button>' +
@@ -619,7 +702,9 @@
     applyToneSuggestion: applyToneSuggestion,
     setSensitiveData: setSensitiveData,
     saveProgress: saveProgress,
-    loadProgress: loadProgress
+    loadProgress: loadProgress,
+    copyPrompt: copyPrompt,
+    downloadPdf: downloadPdf
   };
 
   render();
