@@ -362,13 +362,170 @@
   /* ---------------------------------------------------------------------
      RENDER: OUTPUT (placeholder -- built out in Phase 2/3)
   --------------------------------------------------------------------- */
+  /* ---------------------------------------------------------------------
+     CONTENT: PER-PLATFORM STEP-BY-STEP DIRECTIONS (verified Sept 2026)
+  --------------------------------------------------------------------- */
+  var PLATFORM_STEPS = {
+    claude: {
+      base: [
+        'Go to <strong>claude.ai</strong> and sign in.',
+        'In the left sidebar, click <strong>"Projects,"</strong> then <strong>"+ New Project."</strong>',
+        'Name it and, if you\'d like, add a short description of what you\'re building.',
+        'Click <strong>"Set project instructions"</strong> and paste your Instructions text from Part 2 below, then save.',
+        'You\'ll also see a <strong>"Project knowledge"</strong> area &mdash; this is where you could optionally upload reference files for your Knowledge &amp; Resources. You can leave it empty for now and add files anytime.',
+        'Start a new chat inside the project and try the test cases from Part 2 below.'
+      ],
+      agentExtra: [
+        'To let this project act in other tools, click the <strong>"+"</strong> icon in the chat (or go to <strong>Settings → Customize → Connectors</strong>) and turn one on &mdash; Gmail, Google Calendar, and Google Drive are available on free accounts, plus a broader Connectors Directory (Slack, Canva, Notion, and more).',
+        'Claude will ask your approval before it sends, creates, or changes anything through a connector &mdash; individual accounts can\'t turn this off (Team/Enterprise admins can, org-wide).'
+      ],
+      watchFor: 'Since August 2025, Claude\'s consumer plans (Free, Pro, Max) train on your conversations by default. If you don\'t want that &mdash; especially before pasting anything sensitive &mdash; turn it off under <strong>Settings → Privacy → "Help Improve our AI models."</strong>'
+    },
+    chatgpt: {
+      base: [
+        'Go to <strong>chatgpt.com</strong> and sign in.',
+        'In the sidebar, click <strong>"New project"</strong> and give it a name.',
+        'Open the project\'s <strong>•••</strong> menu → <strong>"Project settings"</strong> and add your Instructions text from Part 2 below.',
+        'Upload two or three reference files if you have them for your Knowledge &amp; Resources &mdash; optional.',
+        'Start a chat inside the project and try the test cases from Part 2 below.'
+      ],
+      agentExtra: [
+        'To connect an outside app, go to <strong>Settings → Plugins</strong>, connect one (Google Drive, Gmail, Slack, Notion, Canva, and more), then reference it directly in a chat inside your project.',
+        'Building a brand-new Plugin from scratch needs a Business, Enterprise, or Edu workspace &mdash; personal accounts can still connect and use an existing app, just not build a new one.'
+      ],
+      watchFor: 'Custom GPTs are being retired &mdash; new ones can no longer be created on personal accounts, and existing ones stop working entirely on December 11, 2026. ChatGPT Projects (used above) is the durable path going forward. Note: the new "Plugins" feature reuses a name OpenAI used for something different back in 2023 &mdash; ignore any old tutorials that turn up.'
+    },
+    perplexity: {
+      base: [
+        'Go to <strong>perplexity.ai</strong> and sign in.',
+        'Click <strong>"Projects"</strong> in the sidebar, then <strong>"+ New project."</strong>',
+        'Give it a title and, if you\'d like, a short description.',
+        'Under <strong>Settings → Context</strong>, add your Instructions text from Part 2 below.',
+        'Upload files under <strong>Project Files</strong> if you have them for your Knowledge &amp; Resources &mdash; optional.',
+        'Ask the test cases from Part 2 below and check that its cited sources are accurate and relevant.'
+      ],
+      agentExtra: [
+        'Under <strong>Settings → Connectors</strong>, connect an outside tool (Google Drive, Notion, Linear, GitHub, Slack, and 400+ more).',
+        'For an assistant that actually takes actions rather than just searching and citing, set the project to <strong>"Computer"</strong> mode &mdash; this needs a Pro, Max, or Enterprise plan.'
+      ],
+      watchFor: 'Perplexity renamed "Spaces" to "Projects" in July 2026 &mdash; if you see older instructions mentioning Spaces, they mean the same thing.'
+    },
+    gemini: {
+      base: [
+        'Go to <strong>gemini.google.com</strong> and open your profile menu.',
+        'Select <strong>"Gems,"</strong> then <strong>"New Gem"</strong> (or "Explore Gems" → New Gem).',
+        'Name it and paste your Instructions text from Part 2 below. The <strong>"Use Gemini to re-write instructions"</strong> option can expand a rough draft into fuller instructions.',
+        'Under <strong>"Knowledge,"</strong> click <strong>"Add files"</strong> for anything from your Knowledge &amp; Resources &mdash; optional.',
+        'Preview it with the test cases from Part 2 below &mdash; previewing does not save it.',
+        'Click <strong>"Save."</strong> You can create and edit Gems on the web only (both web and mobile can use one once it\'s saved).'
+      ],
+      agentExtra: [
+        'Gemini can\'t take actions in other tools today. If your idea genuinely needs to send, create, or update something, that\'s a sign to build this one in Claude or Copilot instead &mdash; Gemini stays chatbot-level regardless of what you picked in Step 1.'
+      ],
+      watchFor: 'Google is retiring Gems in favor of a new "skills" format, starting <strong>November 17, 2026</strong> for personal accounts. This flow is accurate today, but expect it to change soon &mdash; check Gemini\'s own help center if something here doesn\'t match what you see.'
+    },
+    copilot: {
+      base: [
+        'Open Microsoft 365 Copilot (or go to <strong>copilot.microsoft.com</strong>) and sign in with your AU account.',
+        'Click <strong>"New agent."</strong>',
+        'Describe its purpose in plain language, or click <strong>"Skip to configure"</strong> to fill in fields directly.',
+        'Paste your Instructions text from Part 2 below into the <strong>Instructions</strong> field.',
+        'Under <strong>Knowledge</strong>, add SharePoint links, uploaded files, or specific web pages if you have them &mdash; optional.',
+        'Under <strong>Suggested Prompts</strong> (sometimes shown as "Starter Prompts"), add one or two quick-click prompts.',
+        'Test it on the <strong>"Try it"</strong> tab using the test cases from Part 2 below, then save and publish.'
+      ],
+      agentExtra: [
+        'For real multi-step actions &mdash; not just answering from your own content &mdash; look at <strong>Copilot Studio</strong> instead (Create → New agent). It now offers two different builders chosen at creation: a classic Topics/Actions builder, or a newer natural-language Build tab &mdash; use whichever your account shows you.',
+        'Some connectors, especially email or calendar actions, may be restricted by your institution\'s policy &mdash; check with your IT or ed-tech team before designing a workflow around one.'
+      ],
+      watchFor: null
+    }
+  };
+
+  /* ---------------------------------------------------------------------
+     CONTENT: CONNECTOR / PLUGIN DECISION CHECKLIST (per platform)
+  --------------------------------------------------------------------- */
+  var CONNECTOR_INFO = {
+    claude: {
+      live: 'Turn on a <strong>Connector</strong> &mdash; Gmail, Google Calendar, Google Drive, or browse the full Connectors Directory (Slack, Canva, Notion, and more) via the &quot;+&quot; icon in your chat or <strong>Settings → Customize → Connectors</strong>.',
+      act: "yes",
+      actText: 'Yes &mdash; Claude will ask your approval before it sends, creates, or changes anything.',
+      fileOnly: 'Skip the connector &mdash; add it to <strong>Project knowledge</strong> instead.',
+      mcp: 'If what you need isn\'t in the built-in list, Claude also supports connecting a custom <strong>MCP</strong> (Model Context Protocol) server &mdash; ask your IT or ed-tech team whether one exists for the tool you have in mind.'
+    },
+    chatgpt: {
+      live: 'Connect a <strong>Plugin</strong> under <strong>Settings → Plugins</strong> &mdash; Google Drive, Gmail, Slack, Notion, Canva, and more.',
+      act: "partial",
+      actText: 'Partially &mdash; personal accounts can connect and use an existing Plugin, but building a brand-new one needs a Business, Enterprise, or Edu workspace.',
+      fileOnly: 'Skip it &mdash; upload the file as Knowledge in your project instead.',
+      mcp: null
+    },
+    perplexity: {
+      live: 'Connect one under <strong>Settings → Connectors</strong> &mdash; Google Drive, Notion, Linear, GitHub, Slack, and 400+ more.',
+      act: "yes",
+      actText: 'Yes, with <strong>"Computer"</strong> mode &mdash; but that needs a Pro, Max, or Enterprise plan. On a free account, Perplexity stays in search-and-cite mode.',
+      fileOnly: 'Skip it &mdash; add the file under Project Files instead.',
+      mcp: 'Perplexity also supports connecting a custom <strong>MCP</strong> (Model Context Protocol) server if what you need isn\'t in the built-in 400+ list &mdash; ask your IT or ed-tech team.'
+    },
+    gemini: {
+      live: '<strong>@mention</strong> a connected Workspace app right in your chat &mdash; Gmail, Docs, Drive, Calendar, Tasks, or Keep.',
+      act: "no",
+      actText: 'No &mdash; Gemini reads and references, but doesn\'t take actions on its own.',
+      fileOnly: 'Skip it &mdash; add the file under Knowledge instead.',
+      mcp: null
+    },
+    copilot: {
+      live: 'Add a <strong>Connector</strong> under Knowledge (Agent Builder) or Tools (Copilot Studio) &mdash; SharePoint, OneDrive, Outlook, and more.',
+      act: "yes",
+      actText: 'Yes, via <strong>Copilot Studio</strong> &mdash; though some connectors, especially email/calendar actions, may be blocked by your institution\'s policy.',
+      fileOnly: 'Skip it &mdash; add the file under Knowledge instead.',
+      mcp: null
+    }
+  };
+
+  var LAST_VERIFIED = "September 2026";
+
+  function renderDirections(platform, pathChoice){
+    var p = PLATFORM_STEPS[platform];
+    var steps = p.base.slice();
+    if(pathChoice === "agent") steps = steps.concat(p.agentExtra);
+    var html = '<div class="tool-block"><h3>Using ' + PLATFORM_META[platform].name + '</h3><ol>';
+    steps.forEach(function(s){ html += '<li>' + s + '</li>'; });
+    html += '</ol>';
+    if(p.watchFor){
+      html += '<p style="margin-top:14px; font-size:13.5px; color:var(--text-muted);"><strong>Watch for:</strong> ' + p.watchFor + '</p>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function renderConnectorChecklist(platform, pathChoice){
+    var c = CONNECTOR_INFO[platform];
+    var nudge = (pathChoice === "chatbot" && c.act !== "no")
+      ? ' If that\'s true for what you\'re building, you actually want the <strong>Agent</strong> path &mdash; go back to Step 1 and choose that instead.'
+      : '';
+    var html = '<div class="tool-block"><h3>Should You Turn On a Connector?</h3><ol>';
+    html += '<li>Does it need something that changes day to day (today\'s calendar, this week\'s inbox) rather than something you could just upload once? → ' + c.live + '</li>';
+    html += '<li>Does it need to <em>do</em> something outside the chat (send, create, update) rather than only answer? → ' + c.actText + nudge + '</li>';
+    html += '<li>Is what you need just sitting in a file you already have? → ' + c.fileOnly + '</li>';
+    html += '</ol>';
+    if(c.mcp){
+      html += '<p style="margin-top:14px; font-size:13.5px; color:var(--text-muted);"><strong>Advanced:</strong> ' + c.mcp + '</p>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  /* ---------------------------------------------------------------------
+     RENDER: OUTPUT
+  --------------------------------------------------------------------- */
   function renderOutput(){
     var p = PLATFORM_META[state.platform];
     var html = '<div class="card">';
     html += '<div class="output-topbar"><div>' +
       '<p class="section-eyebrow">Your Results</p>' +
       '<h2 class="section-title">Your Personalized Plan</h2>' +
-      '<p class="section-desc" style="margin-bottom:0;">Building this out in the next phase.</p>' +
+      '<p class="section-desc" style="margin-bottom:0;">Follow the numbered directions below, then use the copy-paste content in Part 2 with ' + p.name + '.</p>' +
       '</div><button class="btn btn-ghost btn-sm" onclick="App.goTo(3)">← Back</button></div>';
 
     html += '<div class="chip-row">' +
@@ -377,7 +534,20 @@
       (state.sensitiveData ? '<span class="chip">Sensitive data</span>' : '') +
       '</div>';
 
-    html += '<div class="placeholder-note" style="margin-top:28px;">🚧 Step-by-step directions and copy-paste prompts are coming in the next build phase.<br>Your answers so far are saved in this session &mdash; nothing will be lost.</div>';
+    html += '<h3 class="section-heading">Part 1 &middot; Your Step-by-Step Directions</h3>';
+    html += '<p class="section-sub">Plain-language steps for ' + p.name + '.</p>';
+    html += renderDirections(state.platform, state.pathChoice);
+    html += renderConnectorChecklist(state.platform, state.pathChoice);
+
+    html += '<div class="info-box">🔀&nbsp; <strong>This travels with you:</strong> the Instructions text in Part 2 works with little rewriting if you want to try a different platform later &mdash; that\'s the point of writing it in plain language up front.</div>';
+
+    html += '<div class="warning">🔒&nbsp; <strong>Before you paste anything in:</strong> don\'t put institutional data, student records, or anything covered by FERPA or your organization\'s data policy into a personal AI account. Use only the accounts and platforms your organization has approved for that kind of data.' + (state.sensitiveData ? ' You told us this assistant involves sensitive data &mdash; take an extra look at your Guardrails in Part 2 before you paste anything in.' : '') + '</div>';
+
+    html += '<div class="info-box">🕓&nbsp; <strong>AI tools change their menus often.</strong> We verified everything above as of ' + LAST_VERIFIED + '. If a button or menu doesn\'t match what you see, look for the closest equivalent, or check ' + p.name + '\'s own help center.</div>';
+
+    html += '<h3 class="section-heading">Part 2 &middot; Your Copy-Paste Instructions &amp; Prompts</h3>';
+    html += '<p class="section-sub">Already filled in with your answers. Click Copy, then paste into ' + p.name + '.</p>';
+    html += '<div class="placeholder-note">🚧 Instructions text, test cases, and copy buttons are coming in the next build phase.<br>Your answers so far are saved in this session &mdash; nothing will be lost.</div>';
 
     html += '<div class="final-actions">' +
       '<button class="btn btn-ghost" onclick="App.goTo(3)">← Back</button>' +
