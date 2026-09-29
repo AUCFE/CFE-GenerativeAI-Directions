@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Build Your AI Assistant — CFE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ══ HEADER ══════════════════════════════════════════════════ -->
+<header class="site-header">
+  <div class="header-left">
+    <a href="https://edspace.american.edu/cfe/" target="_blank" class="logo-container" style="text-decoration:none;">
+      <img class="logo-light" src="assets/cfe-logo-color.png" alt="American University Center for Faculty Excellence">
+      <img class="logo-dark" src="assets/cfe-logo-white.png" alt="American University Center for Faculty Excellence">
+    </a>
+    <div class="header-divider"></div>
+    <div>
+      <div class="header-title">Build Your AI Assistant</div>
+      <div class="header-sub">Center for Faculty Excellence &middot; American University</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="theme-btn" id="themeBtn" onclick="App.toggleTheme()">
+      <span id="themeIcon">🌙</span><span id="themeLabel">Dark Mode</span>
+    </button>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<script src="app.js"></script>
+</body>
+</html>
